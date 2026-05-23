@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import JobCard from "@/components/jobs/JobCard";
 import type { Job, CareerPath } from "@/types";
@@ -11,6 +11,19 @@ interface Props {
   userId: string | null;
   initialSavedIds: string[];
 }
+
+const PATH_ICONS: Record<string, React.ReactNode> = {
+  "business-entrepreneurship": <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 3h18v4H3z"/><path d="M3 10h18v11H3z"/><path d="M10 14h4"/></svg>,
+  "creative-industries":       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><path d="M2 12s4-8 10-8 10 8 10 8-4 8-10 8S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>,
+  "engineering-pm":            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76Z"/></svg>,
+  "finance-accounting":        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>,
+  "health-wellness":           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>,
+  "human-resources":           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+  "law-compliance":            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>,
+  "media-communications":      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92Z"/></svg>,
+  "public-sector":             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M3 22V9l9-7 9 7v13"/><path d="M9 22V12h6v10"/></svg>,
+  "tech-product":              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>,
+};
 
 export default function JobsClient({ initialJobs, careerPaths, userId, initialSavedIds }: Props) {
   const supabase = createClient();
@@ -85,7 +98,7 @@ export default function JobsClient({ initialJobs, careerPaths, userId, initialSa
         <button className={`chip${activePaths.length === 0 ? " on" : ""}`} onClick={() => setActivePaths([])}>All paths</button>
         {careerPaths.map((cp) => (
           <button key={cp.id} className={`chip${activePaths.includes(cp.slug) ? " on" : ""}`} onClick={() => togglePath(cp.slug)}>
-            <span style={{ fontSize: 14 }}>{cp.icon}</span>
+            {PATH_ICONS[cp.slug]}
             {cp.name.split(" & ")[0]}
           </button>
         ))}
@@ -99,7 +112,11 @@ export default function JobsClient({ initialJobs, careerPaths, userId, initialSa
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <div className="empty" style={{ marginTop: 24 }}>No jobs match those filters. Try clearing one.</div>
+        <div className="empty" style={{ marginTop: 24 }}>
+          {initialJobs.length === 0
+            ? "No jobs posted yet — check back soon."
+            : "No jobs match those filters. Try clearing one."}
+        </div>
       ) : (
         <div className="jobs-grid">
           {filtered.map((j) => (
