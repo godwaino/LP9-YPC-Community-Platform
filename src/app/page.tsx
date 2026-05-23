@@ -2,190 +2,230 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { ArrowRight, Briefcase, Users, TrendingUp, CheckCircle, Star } from "lucide-react";
+import { HeroFigures } from "@/components/ui/YPCMark";
 import type { Announcement, CareerPath } from "@/types";
+
+const SPOTLIGHTS = [
+  { name: "Tunde A.", role: "PM at Paystack", quote: "YPC connected me with my first mentor — eight months later I shipped my first product feature.", initials: "TA" },
+  { name: "Ngozi E.", role: "Designer at Flutterwave", quote: "The CV clinic literally changed the way I introduce myself. I get callbacks now.", initials: "NE" },
+  { name: "Femi B.", role: "Analyst, Sterling Bank", quote: "I came for the jobs, stayed for the people. Found my closest friends here.", initials: "FB" },
+];
+
+const PATH_COLORS: Record<string, string> = {
+  "tech-product": "#1936FF",
+  "business-entrepreneurship": "#FF5C4D",
+  "creative-industries": "#FFD400",
+  "engineering-pm": "#9BE7B1",
+  "finance-accounting": "#0A1AD6",
+  "health-wellness": "#FF8FA3",
+  "human-resources": "#A78BFA",
+  "law-compliance": "#0B0F2C",
+  "media-communications": "#F97316",
+  "public-sector": "#10B981",
+};
 
 export default async function LandingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
   let isAdmin = false;
+  let userName = "";
   if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    isAdmin = profile?.role === "admin";
+    const { data: p } = await supabase.from("profiles").select("role,full_name").eq("id", user.id).single();
+    isAdmin = p?.role === "admin";
+    userName = p?.full_name ?? "";
   }
 
   const { data: announcements } = await supabase
-    .from("announcements")
-    .select("*")
-    .eq("is_active", true)
-    .order("created_at", { ascending: false })
-    .limit(3) as { data: Announcement[] | null };
+    .from("announcements").select("*").eq("is_active", true)
+    .order("created_at", { ascending: false }).limit(3) as { data: Announcement[] | null };
 
   const { data: careerPaths } = await supabase
-    .from("career_paths")
-    .select("*")
-    .order("name") as { data: CareerPath[] | null };
+    .from("career_paths").select("*").order("name") as { data: CareerPath[] | null };
 
-  const features = [
-    { icon: Users, title: "Join the Community", desc: "Connect with hundreds of young professionals across Lagos Province 9." },
-    { icon: Briefcase, title: "Discover Opportunities", desc: "Browse vetted jobs and internships tailored to your career path." },
-    { icon: TrendingUp, title: "Grow Your Career", desc: "Access workshops, mentors, and resources to level up professionally." },
-  ];
+  const ArrowR = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>
+  );
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar user={user} isAdmin={isAdmin} />
+    <div>
+      <Navbar user={user} isAdmin={isAdmin} userName={userName} />
 
-      <main className="flex-1">
-        {/* Hero */}
-        <section className="bg-gradient-to-br from-brand-800 via-brand-700 to-brand-600 text-white">
-          <div className="max-w-5xl mx-auto px-4 py-16 sm:py-24">
-            <div className="max-w-xl">
-              <div className="inline-flex items-center gap-2 bg-white/10 rounded-full px-4 py-1.5 text-sm font-medium mb-6 backdrop-blur-sm">
-                <Star size={14} className="text-gold-400 fill-gold-400" />
-                Lagos Province 9 Young Professionals Club
-              </div>
-              <h1 className="text-3xl sm:text-5xl font-black leading-tight mb-4">
-                Your Career,<br />
-                <span className="text-gold-400">Your Community</span>
-              </h1>
-              <p className="text-lg text-brand-100 leading-relaxed mb-8">
-                LP9 YPC connects young professionals with job opportunities, career guidance, and a network that lifts everyone up. Join us today — it takes less than two minutes.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                <Link href="/register" className="btn-primary bg-white text-brand-800 hover:bg-brand-50 active:bg-brand-100">
-                  Register Free <ArrowRight size={18} />
-                </Link>
-                <Link href="/jobs" className="btn-secondary border-white/50 text-white hover:bg-white/10 hover:border-white">
-                  View Jobs
-                </Link>
-              </div>
+      {/* Hero */}
+      <section className="hero wrap">
+        <div style={{ position: "absolute", top: 40, right: 40, opacity: .85, pointerEvents: "none" }}>
+          <HeroFigures color="#1936FF" accent="#FFD400" size={420} />
+        </div>
+        <div className="hero-grid">
+          <div style={{ position: "relative", zIndex: 2 }}>
+            <span className="pill" style={{ marginBottom: 24 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>
+              LP9 · Lagos Province 9
+            </span>
+            <h1 className="display">
+              Your career.<br />
+              Your <span className="hl">community</span>.<br />
+              <span className="coral">Your move.</span>
+            </h1>
+            <p>The community-first career platform for young professionals in Lagos. Find jobs that fit, mentors who get you, and people who lift everyone up.</p>
+            <div className="hero-actions">
+              <Link href="/register" className="btn btn-accent">
+                Join free in 2 mins <ArrowR />
+              </Link>
+              <Link href="/jobs" className="btn btn-ghost">Browse jobs first</Link>
             </div>
           </div>
-        </section>
+        </div>
 
-        {/* Stats banner */}
-        <section className="bg-brand-900 text-white">
-          <div className="max-w-5xl mx-auto px-4 py-6">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              {[
-                { label: "Members", value: "500+" },
-                { label: "Jobs Posted", value: "200+" },
-                { label: "Career Paths", value: "10" },
-              ].map((s) => (
-                <div key={s.label}>
-                  <p className="text-2xl font-black text-gold-400">{s.value}</p>
-                  <p className="text-xs text-brand-200 mt-0.5">{s.label}</p>
-                </div>
-              ))}
-            </div>
+        {/* Stats */}
+        <div className="hero-stats">
+          <div className="stat">
+            <div className="num">500<span style={{ color: "var(--blue)" }}>+</span></div>
+            <div className="lbl">Active members</div>
           </div>
-        </section>
-
-        {/* Announcements */}
-        {announcements && announcements.length > 0 && (
-          <section className="max-w-5xl mx-auto px-4 py-10">
-            <h2 className="section-title mb-4">📢 Announcements</h2>
-            <div className="space-y-3">
-              {announcements.map((a) => (
-                <div key={a.id} className="card p-4 flex gap-3">
-                  <div className="w-2 rounded-full bg-brand-500 shrink-0 self-stretch" />
-                  <div>
-                    <p className="font-semibold text-slate-900">{a.title}</p>
-                    {a.content && <p className="text-sm text-slate-500 mt-1">{a.content}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Features */}
-        <section className="max-w-5xl mx-auto px-4 py-10">
-          <h2 className="section-title text-center mb-2">Why Join LP9 YPC?</h2>
-          <p className="text-slate-500 text-center mb-8">Everything you need to advance your career in one place.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {features.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="card p-6 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-brand-50 flex items-center justify-center mx-auto mb-4">
-                  <Icon size={24} className="text-brand-700" />
-                </div>
-                <h3 className="font-bold text-slate-900 mb-2">{title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
-              </div>
-            ))}
+          <div className="stat b">
+            <div className="num">200+</div>
+            <div className="lbl">Vetted jobs this year</div>
           </div>
-        </section>
+          <div className="stat c">
+            <div className="num">10</div>
+            <div className="lbl">Career paths to explore</div>
+          </div>
+        </div>
+      </section>
 
-        {/* Career Paths */}
-        {careerPaths && careerPaths.length > 0 && (
-          <section className="bg-white py-10">
-            <div className="max-w-5xl mx-auto px-4">
-              <h2 className="section-title mb-2">Career Paths</h2>
-              <p className="text-slate-500 mb-6">Select the path that fits you — we&apos;ll tailor opportunities to match.</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                {careerPaths.map((cp) => (
-                  <div key={cp.id} className="card p-3 text-center hover:border-brand-200 hover:shadow-md transition-all cursor-default">
-                    <span className="text-2xl">{cp.icon}</span>
-                    <p className="text-xs font-medium text-slate-700 mt-2 leading-tight">{cp.name}</p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 text-center">
-                <Link href="/register" className="btn-primary">
-                  Choose Your Path <ArrowRight size={18} />
-                </Link>
-              </div>
-            </div>
-          </section>
-        )}
-
-        {/* How it works */}
-        <section className="max-w-5xl mx-auto px-4 py-10">
-          <h2 className="section-title mb-2">How It Works</h2>
-          <p className="text-slate-500 mb-8">Get started in three simple steps.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {[
-              { step: "01", title: "Register", desc: "Fill in a short form — takes less than 2 minutes. No complicated questions." },
-              { step: "02", title: "Choose Your Path", desc: "Select the career area(s) that match your profession and interests." },
-              { step: "03", title: "Apply & Grow", desc: "Browse jobs, tap Apply, and access resources built for your career path." },
-            ].map(({ step, title, desc }) => (
-              <div key={step} className="flex gap-4">
-                <div className="w-10 h-10 rounded-full bg-brand-700 text-white font-black text-sm flex items-center justify-center shrink-0">
-                  {step}
-                </div>
+      {/* Announcements */}
+      {announcements && announcements.length > 0 && (
+        <section className="block wrap" style={{ paddingTop: 48, paddingBottom: 48 }}>
+          <span className="eyebrow">Announcements</span>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 16 }}>
+            {announcements.map((a) => (
+              <div key={a.id} style={{ padding: "16px 20px", borderRadius: 16, background: "var(--cream)", border: "1px solid var(--line)", display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div style={{ width: 4, borderRadius: 2, background: "var(--blue)", alignSelf: "stretch", flexShrink: 0 }} />
                 <div>
-                  <h3 className="font-bold text-slate-900 mb-1">{title}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
+                  <p style={{ margin: 0, fontWeight: 600 }}>{a.title}</p>
+                  {a.content && <p style={{ margin: "4px 0 0", fontSize: 14, color: "#555" }}>{a.content}</p>}
                 </div>
               </div>
             ))}
           </div>
         </section>
+      )}
 
-        {/* CTA */}
-        <section className="bg-brand-700 text-white">
-          <div className="max-w-5xl mx-auto px-4 py-12 text-center">
-            <h2 className="text-2xl sm:text-3xl font-black mb-3">Ready to join LP9 YPC?</h2>
-            <p className="text-brand-100 mb-8 max-w-md mx-auto">
-              Registration is free, fast, and takes less than two minutes. Start building your career today.
-            </p>
-            <div className="flex flex-wrap gap-3 justify-center">
-              <Link href="/register" className="btn-primary bg-white text-brand-800 hover:bg-brand-50">
-                <CheckCircle size={18} /> Register Now — It&apos;s Free
-              </Link>
-              <Link href="/jobs" className="btn-secondary border-white/40 text-white hover:bg-white/10">
-                Browse Jobs First
-              </Link>
+      {/* Why YPC */}
+      <section className="block wrap">
+        <span className="eyebrow">Why YPC</span>
+        <h2 className="section display">Everything you need<br />to make your next move.</h2>
+        <div className="why" style={{ marginTop: 48 }}>
+          <div className="why-card b">
+            <div className="ic" style={{ color: "var(--accent)" }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
+            <h3>Belong.</h3>
+            <p>500+ young pros across 10 career paths. We meet IRL and online — events, panels, study groups.</p>
+          </div>
+          <div className="why-card y">
+            <div className="ic">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg>
+            </div>
+            <h3>Get hired.</h3>
+            <p>Curated jobs, internships, and gigs. One-tap apply — your YPC profile travels with you.</p>
+          </div>
+          <div className="why-card">
+            <div className="ic">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2v6M12 16v6M22 12h-6M8 12H2M19 5l-4 4M9 15l-4 4M19 19l-4-4M9 9 5 5"/></svg>
+            </div>
+            <h3>Level up.</h3>
+            <p>Mentor matching, CV clinics, and resources tailored to your path. Stuck? We&apos;ve been there.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Career Paths */}
+      {careerPaths && careerPaths.length > 0 && (
+        <section className="block wrap">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 24, marginBottom: 32 }}>
+            <div>
+              <span className="eyebrow">Career Paths</span>
+              <h2 className="section display">Pick yours.<br />We&apos;ll do the rest.</h2>
+            </div>
+            <p className="sub" style={{ margin: 0 }}>Your paths shape your jobs feed, mentor matches, and event recs.</p>
+          </div>
+          <div className="paths-row">
+            {careerPaths.map((cp) => (
+              <Link key={cp.id} href={`/jobs?path=${cp.slug}`} className="path-tile">
+                <span className="dot" style={{ background: PATH_COLORS[cp.slug] ?? "#1936FF" }} />
+                <span>{cp.name}</span>
+              </Link>
+            ))}
+          </div>
+          <div style={{ marginTop: 32 }}>
+            <Link href="/register" className="btn btn-primary">
+              Choose your path <ArrowR />
+            </Link>
           </div>
         </section>
-      </main>
+      )}
+
+      {/* How it works */}
+      <section className="block wrap">
+        <span className="eyebrow">How it works</span>
+        <h2 className="section display">Three steps.<br />Maybe four minutes.</h2>
+        <div className="steps" style={{ marginTop: 48 }}>
+          {[
+            { n: "01", t: "Register", d: "A short form. No essays, no LinkedIn screenshots. You're done in under 2 minutes." },
+            { n: "02", t: "Pick your paths", d: "Choose 1–3 career areas. Your feed and matches calibrate to what you picked." },
+            { n: "03", t: "Apply & grow", d: "Tap apply on jobs, RSVP to events, request a mentor — all from one dashboard." },
+          ].map(({ n, t, d }) => (
+            <div key={n} className="step">
+              <div className="n">{n}</div>
+              <h3>{t}</h3>
+              <p>{d}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="block wrap">
+        <span className="eyebrow">Voices</span>
+        <h2 className="section display">From members who showed up.</h2>
+        <div className="why" style={{ marginTop: 48 }}>
+          {SPOTLIGHTS.map((s, i) => (
+            <div key={i} className="why-card" style={{
+              background: i === 1 ? "var(--coral)" : i === 2 ? "var(--ink)" : "var(--cream)",
+              color: i >= 1 ? "#fff" : "var(--ink)",
+              borderColor: "transparent",
+              minHeight: 280,
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: "auto" }}>
+                <div style={{ width: 44, height: 44, borderRadius: 22, background: i === 0 ? "var(--blue)" : "var(--accent)", color: i === 0 ? "#fff" : "var(--ink)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontFamily: "var(--font-display)" }}>{s.initials}</div>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: 15 }}>{s.name}</div>
+                  <div style={{ fontSize: 13, opacity: .7 }}>{s.role}</div>
+                </div>
+              </div>
+              <p style={{ fontFamily: "var(--font-display)", fontSize: 22, lineHeight: 1.25, letterSpacing: "-0.01em", marginTop: 32 }}>&ldquo;{s.quote}&rdquo;</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Big CTA */}
+      <section className="block wrap">
+        <div className="big-cta">
+          <h2>Ready to make<br />your <span className="accent">next move</span>?</h2>
+          <p>Free forever. No spam. Just opportunities, people, and the occasional jollof at our IRL hangs.</p>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <Link href="/register" className="btn btn-accent">
+              Join free in 2 mins <ArrowR />
+            </Link>
+            <Link href="/jobs" className="btn" style={{ background: "transparent", color: "#fff", border: "1.5px solid rgba(255,255,255,.3)" }}>
+              See jobs first
+            </Link>
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>

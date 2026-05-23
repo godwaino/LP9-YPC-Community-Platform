@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import JobCard from "@/components/jobs/JobCard";
-import { ArrowRight, Bookmark } from "lucide-react";
 import type { Job } from "@/types";
 
 interface Props {
@@ -13,100 +12,87 @@ interface Props {
   userId: string;
 }
 
+const EVENTS = [
+  { date: "JUN 12", title: "Career Switching Panel", loc: "YPC Hub, Lekki", tag: "Workshop" },
+  { date: "JUN 20", title: "CV Clinic — 1:1 Reviews", loc: "Virtual", tag: "Coaching" },
+  { date: "JUL 03", title: "Tech Founders Meetup", loc: "Yaba Co-Lab", tag: "Network" },
+];
+
 export default function DashboardClient({ latestJobs, savedJobsData, userId }: Props) {
   const supabase = createClient();
-  const [activeTab, setActiveTab] = useState<"latest" | "saved">("latest");
-  const [savedIds, setSavedIds] = useState<Set<string>>(
-    new Set(savedJobsData.map((s) => s.jobs?.id).filter(Boolean))
-  );
-  const [savedJobs, setSavedJobs] = useState<Job[]>(
-    savedJobsData.map((s) => s.jobs).filter(Boolean)
-  );
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set(savedJobsData.map((s) => s.jobs?.id).filter(Boolean)));
+  const [savedJobs, setSavedJobs] = useState<Job[]>(savedJobsData.map((s) => s.jobs).filter(Boolean));
 
   async function toggleSave(jobId: string) {
     if (savedIds.has(jobId)) {
       await supabase.from("saved_jobs").delete().eq("member_id", userId).eq("job_id", jobId);
-      setSavedIds((prev) => { const n = new Set(prev); n.delete(jobId); return n; });
-      setSavedJobs((prev) => prev.filter((j) => j.id !== jobId));
+      setSavedIds((p) => { const n = new Set(p); n.delete(jobId); return n; });
+      setSavedJobs((p) => p.filter((j) => j.id !== jobId));
     } else {
       await supabase.from("saved_jobs").insert({ member_id: userId, job_id: jobId });
-      setSavedIds((prev) => new Set([...prev, jobId]));
+      setSavedIds((p) => new Set([...p, jobId]));
     }
   }
 
   return (
-    <div>
-      {/* Tabs */}
-      <div className="flex gap-1 bg-slate-100 p-1 rounded-xl mb-4">
-        <button
-          onClick={() => setActiveTab("latest")}
-          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === "latest" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
-        >
-          Latest Jobs
-        </button>
-        <button
-          onClick={() => setActiveTab("saved")}
-          className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5 ${activeTab === "saved" ? "bg-white text-slate-900 shadow-sm" : "text-slate-500"}`}
-        >
-          <Bookmark size={14} /> Saved {savedIds.size > 0 && `(${savedIds.size})`}
-        </button>
+    <>
+      {/* Recommended jobs */}
+      <div className="dash-section">
+        <h3>Recommended for you <Link href="/jobs">See all →</Link></h3>
+        {latestJobs.length === 0 ? (
+          <div className="empty">No jobs posted yet — check back soon.</div>
+        ) : (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {latestJobs.map((j) => (
+              <div key={j.id} style={{ padding: 16, border: "1px solid var(--line)", borderRadius: 16, display: "flex", gap: 12, alignItems: "flex-start", transition: "border-color .15s" }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--blue)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, flexShrink: 0 }}>
+                  {j.company.charAt(0)}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 15, lineHeight: 1.2 }}>{j.title}</div>
+                  <div style={{ fontSize: 13, color: "#666", marginTop: 2 }}>{j.company}{j.salary_range ? ` · ${j.salary_range}` : ""}</div>
+                </div>
+                <a href={j.application_link} target="_blank" rel="noopener noreferrer"
+                  className="btn btn-primary" style={{ padding: "6px 12px", fontSize: 12, flexShrink: 0 }}>
+                  Apply
+                </a>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
-      {activeTab === "latest" && (
-        <div>
-          {latestJobs.length === 0 ? (
-            <div className="text-center py-10">
-              <p className="text-3xl mb-2">💼</p>
-              <p className="font-semibold text-slate-700">No jobs yet</p>
-              <p className="text-sm text-slate-500">Check back soon — new opportunities are posted regularly.</p>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {latestJobs.map((job) => (
-                  <JobCard
-                    key={job.id}
-                    job={job}
-                    isSaved={savedIds.has(job.id)}
-                    onToggleSave={toggleSave}
-                  />
-                ))}
-              </div>
-              <div className="mt-4 text-center">
-                <Link href="/jobs" className="btn-secondary text-sm py-2.5">
-                  View All Jobs <ArrowRight size={16} />
-                </Link>
-              </div>
-            </>
-          )}
+      {/* Saved jobs */}
+      {savedJobs.length > 0 && (
+        <div className="dash-section">
+          <h3>Saved jobs <Link href="/jobs">Browse more →</Link></h3>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {savedJobs.map((j) => (
+              <JobCard key={j.id} job={j} isSaved={savedIds.has(j.id)} onToggleSave={toggleSave} />
+            ))}
+          </div>
         </div>
       )}
 
-      {activeTab === "saved" && (
-        <div>
-          {savedJobs.length === 0 ? (
-            <div className="text-center py-10">
-              <p className="text-3xl mb-2">🔖</p>
-              <p className="font-semibold text-slate-700">No saved jobs yet</p>
-              <p className="text-sm text-slate-500 mb-4">Tap the bookmark icon on any job listing to save it here.</p>
-              <Link href="/jobs" className="btn-primary text-sm py-2.5">
-                Browse Jobs <ArrowRight size={16} />
-              </Link>
+      {/* Upcoming events */}
+      <div className="dash-section">
+        <h3>Upcoming events <a href="#" style={{ fontSize: 14, fontWeight: 500, fontFamily: "var(--font-body)", color: "var(--blue)" }}>See all →</a></h3>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {EVENTS.map((e) => (
+            <div key={e.date} style={{ display: "flex", gap: 16, alignItems: "center", padding: 14, border: "1px solid var(--line)", borderRadius: 14 }}>
+              <div style={{ width: 56, height: 56, borderRadius: 12, background: "var(--ink)", color: "var(--accent)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontWeight: 700, lineHeight: 1, flexShrink: 0 }}>
+                <div style={{ fontSize: 10, opacity: .7 }}>{e.date.split(" ")[0]}</div>
+                <div style={{ fontSize: 18 }}>{e.date.split(" ")[1]}</div>
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontFamily: "var(--font-display)", fontWeight: 600, fontSize: 15 }}>{e.title}</div>
+                <div style={{ fontSize: 13, color: "#666" }}>{e.loc} · {e.tag}</div>
+              </div>
+              <button className="btn btn-ghost" style={{ padding: "8px 14px", fontSize: 13 }}>RSVP</button>
             </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {savedJobs.map((job) => (
-                <JobCard
-                  key={job.id}
-                  job={job}
-                  isSaved={savedIds.has(job.id)}
-                  onToggleSave={toggleSave}
-                />
-              ))}
-            </div>
-          )}
+          ))}
         </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 }

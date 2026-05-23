@@ -2,119 +2,106 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { ArrowRight, Target, Eye, Heart } from "lucide-react";
+import { HeroFigures } from "@/components/ui/YPCMark";
 
 export default async function AboutPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
   let isAdmin = false;
+  let userName = "";
   if (user) {
-    const { data: p } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    const { data: p } = await supabase.from("profiles").select("role,full_name").eq("id", user.id).single();
     isAdmin = p?.role === "admin";
+    userName = p?.full_name ?? "";
   }
 
-  const faqs = [
-    { q: "Who can join LP9 YPC?", a: "Any young professional connected to Lagos Province 9 can join. Whether you are employed, self-employed, a student, or job-seeking, LP9 YPC has a place for you." },
-    { q: "Is registration free?", a: "Yes. Membership and registration on the platform are completely free." },
-    { q: "How do I find a job?", a: "After registering and selecting your career path, go to the Jobs page. You can filter by work mode, type, and career path, then tap 'Apply Now' to go directly to the application page." },
-    { q: "Can I apply to multiple career paths?", a: "Absolutely. You can select multiple career paths that reflect your interests and background." },
-    { q: "How are job listings verified?", a: "All job listings are reviewed and approved by LP9 YPC coordinators before going live. Application links are tested to ensure they work correctly." },
-    { q: "How do I update my profile?", a: "After logging in, go to your Dashboard and click 'Edit Profile' to update your details at any time." },
-  ];
+  const ArrowR = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="m13 5 7 7-7 7"/></svg>;
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar user={user} isAdmin={isAdmin} />
+    <div>
+      <Navbar user={user} isAdmin={isAdmin} userName={userName} />
 
-      <main className="flex-1">
+      <div className="wrap">
         {/* Hero */}
-        <section className="bg-brand-800 text-white py-14">
-          <div className="max-w-3xl mx-auto px-4 text-center">
-            <h1 className="text-3xl sm:text-4xl font-black mb-3">About LP9 YPC</h1>
-            <p className="text-brand-100 text-lg leading-relaxed">
-              Lagos Province 9 Young Professionals Club is a community of driven, ambitious professionals committed to mutual growth, career advancement, and service.
+        <section className="about-hero">
+          <div>
+            <span className="eyebrow">About YPC</span>
+            <h1 className="display" style={{ fontSize: 72, margin: "12px 0 24px" }}>
+              We&apos;re a community<br />of young pros<br />
+              <span style={{ color: "var(--coral)" }}>building each other up.</span>
+            </h1>
+            <p style={{ fontSize: 18, color: "#444", lineHeight: 1.6, maxWidth: 540 }}>
+              LP9 YPC is the Young Professionals Club of Lagos Province 9 — a chapter under RCCG dedicated to helping young people find work, mentors, and a community that actually shows up.
+            </p>
+          </div>
+          <div style={{ display: "flex", justifyContent: "center" }}>
+            <HeroFigures color="var(--ink)" accent="var(--accent)" size={360} />
+          </div>
+        </section>
+
+        {/* Values */}
+        <section>
+          <span className="eyebrow">What we believe</span>
+          <h2 className="section display" style={{ marginBottom: 32 }}>Three values.<br />Non-negotiable.</h2>
+          <div className="value-grid">
+            <div className="value-card">
+              <h3>Real community.</h3>
+              <p style={{ color: "#555", margin: 0, lineHeight: 1.6 }}>We meet in person every month. No bots, no fake hype. The people in your DMs are people you&apos;ll meet for jollof.</p>
+            </div>
+            <div className="value-card" style={{ background: "var(--blue)", color: "#fff", borderColor: "transparent" }}>
+              <h3>Career-first.</h3>
+              <p style={{ color: "rgba(255,255,255,.85)", margin: 0, lineHeight: 1.6 }}>Every event, mentor, and resource is built to move your career forward. No fluff. No paid promos pretending to be advice.</p>
+            </div>
+            <div className="value-card" style={{ background: "var(--accent)", color: "var(--accent-ink)", borderColor: "transparent" }}>
+              <h3>Lift everyone up.</h3>
+              <p style={{ margin: 0, lineHeight: 1.6 }}>You got the role? Send the ladder back. Mentorship is how this club stays alive. Pay it forward.</p>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQs */}
+        <section className="block" id="faq">
+          <div className="big-cta" style={{ background: "var(--cream)", color: "var(--ink)" }}>
+            <h2 style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
+              FAQs — <span style={{ color: "var(--blue)" }}>quick ones.</span>
+            </h2>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 32, textAlign: "left" }}>
+              {[
+                ["Is YPC free?", "Yes — membership is free. Some workshops have material costs but the core platform is free forever."],
+                ["Do I have to be in RCCG?", "No. YPC is open to all young professionals in Lagos Province 9 and the surrounding area."],
+                ["How do you vet the jobs?", "Every employer is reviewed by a YPC team member before they can post. We reject spam, MLMs, and roles below market."],
+                ["What's the age range?", "We focus on 21–35, but ages flex if you're in the early stages of your career."],
+                ["Can I update my profile later?", "Yes, anytime. Log in, go to your dashboard, and click Settings."],
+                ["How do I find jobs for my field?", "Use the career path filters on the Jobs page to see only roles relevant to your discipline."],
+              ].map(([q, a], i) => (
+                <div key={i} style={{ padding: 24, background: "#fff", borderRadius: 18, border: "1px solid var(--line)", textAlign: "left" }}>
+                  <h4 style={{ fontFamily: "var(--font-display)", fontSize: 18, margin: "0 0 8px", color: "var(--ink)" }}>{q}</h4>
+                  <p style={{ margin: 0, color: "#555", fontSize: 14, lineHeight: 1.55 }}>{a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Privacy */}
+        <section id="privacy" style={{ paddingBottom: 80 }}>
+          <div style={{ padding: 32, background: "var(--cream)", borderRadius: 20, border: "1px solid var(--line)" }}>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 24, margin: "0 0 12px" }}>Privacy & Data Notice</h2>
+            <p style={{ color: "#555", lineHeight: 1.7, margin: 0, fontSize: 14 }}>
+              LP9 YPC collects only the information necessary to manage your membership and connect you with relevant opportunities. Your data is stored securely and never shared with third parties without your consent. You may update or delete your information at any time through your dashboard. By registering, you consent to receive relevant career and community updates from LP9 YPC.
             </p>
           </div>
         </section>
 
-        <div className="max-w-3xl mx-auto px-4 py-12 space-y-12">
-
-          {/* Vision & Mission */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {[
-              { icon: Eye, title: "Vision", text: "To be the foremost community platform for young professionals in Lagos Province 9, empowering members to reach their full potential." },
-              { icon: Target, title: "Mission", text: "To connect young professionals with career opportunities, mentors, and resources that accelerate personal and professional growth." },
-              { icon: Heart, title: "Values", text: "Community, excellence, integrity, inclusivity, and continuous learning guide everything we do." },
-            ].map(({ icon: Icon, title, text }) => (
-              <div key={title} className="card p-5 text-center">
-                <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center mx-auto mb-3">
-                  <Icon size={20} className="text-brand-700" />
-                </div>
-                <h3 className="font-bold text-slate-900 mb-2">{title}</h3>
-                <p className="text-sm text-slate-500 leading-relaxed">{text}</p>
-              </div>
-            ))}
-          </div>
-
-          {/* What the platform offers */}
-          <div>
-            <h2 className="section-title mb-4">What This Platform Offers</h2>
-            <div className="space-y-3">
-              {[
-                "A fast and simple member registration process",
-                "Career path selection tailored to your profession",
-                "A curated jobs and opportunities board with direct application links",
-                "A personal dashboard to track saved jobs and career activities",
-                "Announcements and updates from LP9 YPC coordinators",
-                "Resources and tips to support your career journey",
-              ].map((item) => (
-                <div key={item} className="flex items-start gap-3">
-                  <div className="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center shrink-0 mt-0.5">
-                    <div className="w-2 h-2 rounded-full bg-brand-700" />
-                  </div>
-                  <p className="text-slate-700">{item}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* FAQs */}
-          <div id="faq">
-            <h2 className="section-title mb-4">Frequently Asked Questions</h2>
-            <div className="space-y-3">
-              {faqs.map(({ q, a }) => (
-                <details key={q} className="card group">
-                  <summary className="flex items-start justify-between gap-4 p-4 cursor-pointer font-semibold text-slate-900 list-none">
-                    {q}
-                    <span className="text-brand-700 font-bold group-open:rotate-45 transition-transform shrink-0">+</span>
-                  </summary>
-                  <div className="px-4 pb-4 text-slate-600 text-sm leading-relaxed border-t border-slate-100 pt-3">
-                    {a}
-                  </div>
-                </details>
-              ))}
-            </div>
-          </div>
-
-          {/* Privacy */}
-          <div id="privacy" className="card p-6 bg-slate-50 border-slate-200">
-            <h2 className="font-bold text-slate-900 mb-2">Privacy & Data Notice</h2>
-            <p className="text-sm text-slate-600 leading-relaxed">
-              LP9 YPC collects only the information necessary to manage your membership and connect you with relevant opportunities. Your data is stored securely and never shared with third parties without your consent. You may update or delete your information at any time through your dashboard. By registering, you consent to receive relevant career and community updates from LP9 YPC.
-            </p>
-          </div>
-
-          {/* CTA */}
-          <div className="text-center pt-4">
-            <h2 className="text-xl font-bold text-slate-900 mb-2">Ready to get started?</h2>
-            <p className="text-slate-500 mb-6">Registration is free and takes less than two minutes.</p>
-            <Link href="/register" className="btn-primary">
-              Register Now <ArrowRight size={18} />
-            </Link>
-          </div>
-        </div>
-      </main>
+        {/* CTA */}
+        <section style={{ paddingBottom: 80, textAlign: "center" }}>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: 48, letterSpacing: "-0.03em", margin: "0 0 12px" }}>Ready to get started?</h2>
+          <p style={{ color: "#555", marginBottom: 28, fontSize: 16 }}>Free forever. Registration takes under two minutes.</p>
+          <Link href="/register" className="btn btn-accent" style={{ fontSize: 16, padding: "16px 28px" }}>
+            Join free in 2 mins <ArrowR />
+          </Link>
+        </section>
+      </div>
 
       <Footer />
     </div>

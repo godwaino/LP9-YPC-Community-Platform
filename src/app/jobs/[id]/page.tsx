@@ -3,8 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { ArrowLeft, ExternalLink, MapPin, Calendar, Briefcase } from "lucide-react";
-import { formatDate, isExpired, WORK_MODE_LABELS, ENGAGEMENT_LABELS, LEVEL_LABELS } from "@/lib/utils";
+import { formatDate, isExpired } from "@/lib/utils";
 import type { Job } from "@/types";
 
 export default async function JobDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -13,127 +12,88 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
   const { data: { user } } = await supabase.auth.getUser();
 
   let isAdmin = false;
+  let userName = "";
   if (user) {
-    const { data: p } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    const { data: p } = await supabase.from("profiles").select("role,full_name").eq("id", user.id).single();
     isAdmin = p?.role === "admin";
+    userName = p?.full_name ?? "";
   }
 
-  const { data: job } = await supabase
-    .from("jobs")
-    .select("*, career_paths(*)")
-    .eq("id", id)
-    .single() as { data: Job | null };
-
+  const { data: job } = await supabase.from("jobs").select("*, career_paths(*)").eq("id", id).single() as { data: Job | null };
   if (!job) notFound();
 
   const expired = isExpired(job.deadline);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar user={user} isAdmin={isAdmin} />
+    <div>
+      <Navbar user={user} isAdmin={isAdmin} userName={userName} />
 
-      <main className="flex-1 max-w-3xl mx-auto px-4 py-8 w-full">
-        <Link href="/jobs" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-brand-700 mb-6 transition-colors">
-          <ArrowLeft size={16} /> Back to Jobs
+      <div className="wrap" style={{ paddingTop: 40, paddingBottom: 80, maxWidth: 800 }}>
+        <Link href="/jobs" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 14, color: "#888", marginBottom: 32 }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5"/><path d="m11 5-7 7 7 7"/></svg>
+          Back to Jobs
         </Link>
 
-        <div className="card p-6">
+        <div className="card" style={{ padding: 40 }}>
           {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h1 className="text-2xl font-black text-slate-900 leading-tight mb-1">{job.title}</h1>
-                <p className="text-brand-700 font-semibold text-lg">{job.company}</p>
-              </div>
-              {job.career_paths && (
-                <div className="text-center shrink-0">
-                  <span className="text-3xl">{job.career_paths.icon}</span>
-                  <p className="text-xs text-slate-500 mt-1 max-w-[80px] leading-tight">{job.career_paths.name}</p>
-                </div>
-              )}
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 32 }}>
+            <div>
+              <h1 style={{ fontFamily: "var(--font-display)", fontSize: 40, letterSpacing: "-0.02em", margin: "0 0 8px", lineHeight: 1.1 }}>{job.title}</h1>
+              <p style={{ fontSize: 20, color: "var(--blue)", fontWeight: 600, margin: 0 }}>{job.company}</p>
             </div>
+            {job.career_paths && (
+              <div style={{ textAlign: "center", flexShrink: 0 }}>
+                <div style={{ fontSize: 40 }}>{job.career_paths.icon}</div>
+                <p style={{ fontSize: 12, color: "#888", marginTop: 4, maxWidth: 80, lineHeight: 1.3 }}>{job.career_paths.name}</p>
+              </div>
+            )}
           </div>
 
-          {/* Key details */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {job.location && (
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <MapPin size={16} className="text-brand-600 shrink-0" />
-                {job.location}
-              </div>
-            )}
-            {job.work_mode && (
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <Briefcase size={16} className="text-brand-600 shrink-0" />
-                {WORK_MODE_LABELS[job.work_mode] ?? job.work_mode}
-              </div>
-            )}
-            {job.engagement_type && (
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <span className="text-brand-600">⏱</span>
-                {ENGAGEMENT_LABELS[job.engagement_type] ?? job.engagement_type}
-              </div>
-            )}
-            {job.experience_level && (
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <span className="text-brand-600">📈</span>
-                {LEVEL_LABELS[job.experience_level] ?? job.experience_level}
-              </div>
-            )}
-            {job.salary_range && (
-              <div className="flex items-center gap-2 text-sm text-slate-600">
-                <span className="text-brand-600">💰</span>
-                {job.salary_range}
-              </div>
-            )}
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar size={16} className="text-brand-600 shrink-0" />
-              <span className={expired ? "text-red-500 font-medium" : "text-slate-600"}>
-                {expired ? "Expired" : `Deadline: ${formatDate(job.deadline)}`}
-              </span>
-            </div>
+          {/* Meta chips */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 32 }}>
+            {job.location && <span className="chip">{job.location}</span>}
+            {job.work_mode && <span className="chip">{job.work_mode.charAt(0).toUpperCase() + job.work_mode.slice(1)}</span>}
+            {job.engagement_type && <span className="chip">{job.engagement_type.replace("-", " ").replace(/\b\w/g, c => c.toUpperCase())}</span>}
+            {job.experience_level && <span className="chip">{job.experience_level.charAt(0).toUpperCase() + job.experience_level.slice(1)} Level</span>}
+            {job.salary_range && <span className="chip" style={{ background: "var(--cream)", fontWeight: 600 }}>💰 {job.salary_range}</span>}
           </div>
 
-          {/* Apply CTA - most prominent */}
-          <div className="bg-brand-50 border border-brand-200 rounded-2xl p-5 mb-6 text-center">
-            <p className="text-sm text-slate-600 mb-3">
+          {/* Apply CTA */}
+          <div style={{ background: "var(--cream)", border: "1px solid var(--line)", borderRadius: 20, padding: 32, textAlign: "center", marginBottom: 32 }}>
+            <p style={{ color: "#555", fontSize: 15, marginBottom: 16, marginTop: 0 }}>
               {expired
-                ? "This listing has expired. Check other opportunities below."
-                : "Tap the button below to go directly to the application page."}
+                ? "This listing has expired. Browse other open roles below."
+                : `Deadline: ${formatDate(job.deadline)} — tap the button to open the application page directly.`}
             </p>
             <a
               href={job.application_link}
               target="_blank"
               rel="noopener noreferrer"
-              className={`btn-primary text-base py-4 px-8 w-full sm:w-auto ${expired ? "opacity-50 pointer-events-none" : ""}`}
+              className="btn btn-accent"
+              style={{ fontSize: 16, padding: "16px 32px", pointerEvents: expired ? "none" : "auto", opacity: expired ? .5 : 1 }}
             >
-              <ExternalLink size={18} />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
               {expired ? "Application Closed" : "Apply Now — Open Application Page"}
             </a>
-            {!expired && (
-              <p className="text-xs text-slate-400 mt-2">Opens in a new tab</p>
-            )}
+            {!expired && <p style={{ fontSize: 12, color: "#aaa", margin: "10px 0 0" }}>Opens in a new tab</p>}
           </div>
 
           {/* Description */}
           {job.description && (
-            <div className="mb-6">
-              <h2 className="font-bold text-slate-900 mb-3">About This Role</h2>
-              <div className="text-slate-700 text-sm leading-relaxed whitespace-pre-wrap">{job.description}</div>
+            <div style={{ marginBottom: 32 }}>
+              <h2 style={{ fontFamily: "var(--font-display)", fontSize: 24, margin: "0 0 16px" }}>About this role</h2>
+              <div style={{ color: "#444", lineHeight: 1.7, fontSize: 15, whiteSpace: "pre-wrap" }}>{job.description}</div>
             </div>
           )}
 
-          {/* Footer */}
-          <div className="border-t border-slate-100 pt-4 flex items-center justify-between">
-            <p className="text-xs text-slate-400">
+          <div style={{ borderTop: "1px solid var(--line)", paddingTop: 20, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <p style={{ fontSize: 13, color: "#aaa", margin: 0 }}>
               Posted {new Date(job.created_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}
             </p>
-            <Link href="/jobs" className="btn-ghost text-sm">
-              <ArrowLeft size={16} /> All Jobs
-            </Link>
+            <Link href="/jobs" style={{ fontSize: 14, color: "var(--blue)", fontWeight: 600 }}>← All jobs</Link>
           </div>
         </div>
-      </main>
+      </div>
 
       <Footer />
     </div>

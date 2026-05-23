@@ -27,37 +27,35 @@ export default async function AdminPage() {
   const announcements = (announcementsRes.data ?? []) as Announcement[];
   const totalMembers = statsRes.count ?? 0;
 
+  const { data: adminProfile } = await supabase.from("profiles").select("full_name").eq("id", user.id).single();
+  const adminName = (adminProfile as { full_name: string } | null)?.full_name ?? "";
+
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50">
-      <Navbar user={user} isAdmin={true} />
-      <main className="flex-1 max-w-6xl mx-auto px-4 py-6 w-full">
-        <div className="mb-6">
-          <h1 className="text-2xl font-black text-slate-900">Admin Dashboard</h1>
-          <p className="text-slate-500 text-sm">Manage jobs, members, and announcements.</p>
+    <div style={{ minHeight: "100vh", background: "var(--paper)" }}>
+      <Navbar user={user} isAdmin={true} userName={adminName ?? ""} />
+      <div className="wrap" style={{ paddingTop: 32, paddingBottom: 64 }}>
+        <div style={{ marginBottom: 32 }}>
+          <span className="eyebrow">Admin</span>
+          <h1 className="display" style={{ fontSize: 52, margin: "8px 0 4px" }}>Dashboard</h1>
+          <p style={{ color: "#666", margin: 0 }}>Manage jobs, members, and announcements.</p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div className="hero-stats" style={{ marginBottom: 32 }}>
           {[
-            { label: "Total Members", value: totalMembers, color: "text-brand-700" },
-            { label: "Active Jobs", value: jobs.filter((j) => j.is_active).length, color: "text-green-700" },
-            { label: "Archived Jobs", value: jobs.filter((j) => !j.is_active).length, color: "text-slate-500" },
-            { label: "Announcements", value: announcements.length, color: "text-amber-700" },
-          ].map(({ label, value, color }) => (
-            <div key={label} className="card p-4">
-              <p className={`text-2xl font-black ${color}`}>{value}</p>
-              <p className="text-xs text-slate-500">{label}</p>
+            { label: "Total Members", value: totalMembers, cls: "" },
+            { label: "Active Jobs", value: jobs.filter((j) => j.is_active).length, cls: "b" },
+            { label: "Announcements", value: announcements.length, cls: "c" },
+          ].map(({ label, value, cls }) => (
+            <div key={label} className={`stat${cls ? " " + cls : ""}`}>
+              <div className="num">{value}</div>
+              <div className="lbl">{label}</div>
             </div>
           ))}
         </div>
 
-        <AdminClient
-          jobs={jobs}
-          members={members}
-          careerPaths={careerPaths}
-          announcements={announcements}
-        />
-      </main>
+        <AdminClient jobs={jobs} members={members} careerPaths={careerPaths} announcements={announcements} />
+      </div>
     </div>
   );
 }
