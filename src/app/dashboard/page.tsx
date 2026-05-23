@@ -57,7 +57,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
         <main>
           {welcome && (
             <div style={{ background: "var(--mint)", borderRadius: 20, padding: "16px 20px", marginBottom: 20, display: "flex", gap: 14, alignItems: "center" }}>
-              <span style={{ fontSize: 24 }}>🎉</span>
+              <span style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(11,15,44,.08)", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5.8 11.3 2 22l10.7-3.79"/><path d="M4 3h.01"/><path d="M22 8h.01"/><path d="M15 2h.01"/><path d="M22 20h.01"/><path d="m22 2-2.24 2.24"/><path d="m20 9 2-2"/><path d="m9 20 2-2"/><path d="m7.8 7.8-5.66 5.66"/><path d="m7 7 6 6"/></svg>
+              </span>
               <div>
                 <p style={{ margin: 0, fontWeight: 600, color: "var(--ink)" }}>Welcome to LP9 YPC!</p>
                 <p style={{ margin: 0, fontSize: 14, color: "#555" }}>You&apos;re now a member. Explore jobs and connect with your community.</p>
@@ -73,7 +75,10 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             <span className="pill accent">
               Member · {memberCareerPaths.map((m) => m.career_paths?.name.split(" & ")[0]).join(" · ") || "YPC"}
             </span>
-            <h2 style={{ marginTop: 18 }}>Hey {profile?.full_name?.split(" ")[0] ?? "there"} 👋</h2>
+            <h2 style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 10 }}>
+              Hey {profile?.full_name?.split(" ")[0] ?? "there"}
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/><path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2"/><path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+            </h2>
             <p>You have <strong style={{ color: "var(--accent)" }}>{latestJobs.length} new matches</strong>. Let&apos;s go.</p>
           </div>
 
