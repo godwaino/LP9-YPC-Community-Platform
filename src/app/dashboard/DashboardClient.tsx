@@ -42,7 +42,7 @@ export default function DashboardClient({ latestJobs, savedJobsData, userId }: P
         {latestJobs.length === 0 ? (
           <div className="empty">No jobs posted yet — check back soon.</div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="dash-jobs-grid">
             {latestJobs.map((j) => (
               <div key={j.id} style={{ padding: 16, border: "1px solid var(--line)", borderRadius: 16, display: "flex", gap: 12, alignItems: "flex-start", transition: "border-color .15s" }}>
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: "var(--blue)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-display)", fontWeight: 700, fontSize: 16, flexShrink: 0 }}>
@@ -66,7 +66,7 @@ export default function DashboardClient({ latestJobs, savedJobsData, userId }: P
       {savedJobs.length > 0 && (
         <div className="dash-section">
           <h3>Saved jobs <Link href="/jobs">Browse more →</Link></h3>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div className="dash-jobs-grid">
             {savedJobs.map((j) => (
               <JobCard key={j.id} job={j} isSaved={savedIds.has(j.id)} onToggleSave={toggleSave} />
             ))}

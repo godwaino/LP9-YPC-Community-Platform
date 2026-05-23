@@ -65,7 +65,7 @@ export default async function AboutPage() {
             <h2 style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
               FAQs — <span style={{ color: "var(--blue)" }}>quick ones.</span>
             </h2>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 32, textAlign: "left" }}>
+            <div className="faq-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 32, textAlign: "left" }}>
               {[
                 ["Is YPC free?", "Yes — membership is free. Some workshops have material costs but the core platform is free forever."],
                 ["Do I have to be in RCCG?", "No. YPC is open to all young professionals in Lagos Province 9 and the surrounding area."],
