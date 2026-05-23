@@ -53,7 +53,7 @@ export default async function LandingPage() {
 
       {/* Hero */}
       <section className="hero wrap">
-        <div style={{ position: "absolute", top: 40, right: 40, opacity: .85, pointerEvents: "none" }}>
+        <div className="hero-figure" style={{ position: "absolute", top: 40, right: 40, opacity: .85, pointerEvents: "none" }}>
           <HeroFigures color="#1936FF" accent="#FFD400" size={420} />
         </div>
         <div className="hero-grid">
