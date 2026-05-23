@@ -42,7 +42,7 @@ export default function Navbar({ user, isAdmin, userName }: NavbarProps) {
         </Link>
 
         {/* Desktop links */}
-        <div className="nav-links hidden md:flex">
+        <div className="nav-links">
           <Link href="/jobs" className={onPage("/jobs") ? "on" : ""}>Jobs</Link>
           <Link href="/about" className={onPage("/about") ? "on" : ""}>About</Link>
           {user && <Link href="/dashboard" className={onPage("/dashboard") ? "on" : ""}>Dashboard</Link>}
@@ -50,7 +50,7 @@ export default function Navbar({ user, isAdmin, userName }: NavbarProps) {
         </div>
 
         {/* Desktop CTA */}
-        <div className="nav-cta hidden md:flex">
+        <div className="nav-cta">
           {user ? (
             <>
               <button onClick={handleSignOut} className="btn btn-ghost" style={{ padding: "10px 18px", fontSize: 14 }}>
@@ -76,7 +76,7 @@ export default function Navbar({ user, isAdmin, userName }: NavbarProps) {
 
         {/* Mobile hamburger */}
         <button
-          className="ml-auto md:hidden p-2"
+          className="nav-hamburger"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
