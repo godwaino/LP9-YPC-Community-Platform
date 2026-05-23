@@ -139,7 +139,7 @@ export default function RegisterPage() {
               <div style={{ width: 64, height: 64, borderRadius: 32, background: "var(--mint)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--ink)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12.5 10 17.5 19 7.5"/></svg>
               </div>
-              <h3 style={{ fontFamily: "var(--font-display)", fontSize: 28, margin: "8px 0" }}>You&apos;re a YPC member 🎉</h3>
+              <h3 style={{ fontFamily: "var(--font-display)", fontSize: 28, margin: "8px 0" }}>You&apos;re a YPC member</h3>
               <p style={{ color: "#555", margin: 0 }}>Redirecting to your dashboard…</p>
             </div>
           ) : (

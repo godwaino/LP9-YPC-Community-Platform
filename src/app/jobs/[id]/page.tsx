@@ -55,7 +55,12 @@ export default async function JobDetailPage({ params }: { params: Promise<{ id: 
             {job.work_mode && <span className="chip">{job.work_mode.charAt(0).toUpperCase() + job.work_mode.slice(1)}</span>}
             {job.engagement_type && <span className="chip">{job.engagement_type.replace("-", " ").replace(/\b\w/g, c => c.toUpperCase())}</span>}
             {job.experience_level && <span className="chip">{job.experience_level.charAt(0).toUpperCase() + job.experience_level.slice(1)} Level</span>}
-            {job.salary_range && <span className="chip" style={{ background: "var(--cream)", fontWeight: 600 }}>💰 {job.salary_range}</span>}
+            {job.salary_range && (
+              <span className="chip" style={{ background: "var(--cream)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: 4 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.5 8h5a1.5 1.5 0 0 1 0 3h-5v5"/><path d="M9.5 8v8"/></svg>
+                {job.salary_range}
+              </span>
+            )}
           </div>
 
           {/* Apply CTA */}
