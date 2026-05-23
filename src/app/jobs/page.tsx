@@ -10,48 +10,44 @@ export default async function JobsPage() {
 
   let isAdmin = false;
   let savedJobIds: string[] = [];
+  let userName = "";
 
   if (user) {
-    const { data: p } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    const { data: p } = await supabase.from("profiles").select("role,full_name").eq("id", user.id).single();
     isAdmin = p?.role === "admin";
-
-    const { data: saved } = await supabase
-      .from("saved_jobs")
-      .select("job_id")
-      .eq("member_id", user.id);
+    userName = p?.full_name ?? "";
+    const { data: saved } = await supabase.from("saved_jobs").select("job_id").eq("member_id", user.id);
     savedJobIds = (saved ?? []).map((s: { job_id: string }) => s.job_id);
   }
 
   const { data: jobs } = await supabase
-    .from("jobs")
-    .select("*, career_paths(*)")
+    .from("jobs").select("*, career_paths(*)")
     .eq("is_active", true)
     .order("created_at", { ascending: false }) as { data: Job[] | null };
 
   const { data: careerPaths } = await supabase
-    .from("career_paths")
-    .select("*")
-    .order("name") as { data: CareerPath[] | null };
+    .from("career_paths").select("*").order("name") as { data: CareerPath[] | null };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Navbar user={user} isAdmin={isAdmin} />
-      <main className="flex-1">
-        <div className="bg-brand-800 text-white py-10">
-          <div className="max-w-5xl mx-auto px-4">
-            <h1 className="text-2xl sm:text-3xl font-black mb-1">Jobs & Opportunities</h1>
-            <p className="text-brand-200 text-sm">Tap <strong>Apply Now</strong> on any listing to go directly to the application page.</p>
-          </div>
-        </div>
-        <div className="max-w-5xl mx-auto px-4 py-6">
-          <JobsClient
-            initialJobs={jobs ?? []}
-            careerPaths={careerPaths ?? []}
-            userId={user?.id ?? null}
-            initialSavedIds={savedJobIds}
-          />
-        </div>
-      </main>
+    <div>
+      <Navbar user={user} isAdmin={isAdmin} userName={userName} />
+
+      <section className="wrap page-head">
+        <span className="eyebrow">Opportunities</span>
+        <h1>The jobs board.<br />
+          <span style={{ color: "var(--blue)" }}>{(jobs ?? []).length}</span> roles open.
+        </h1>
+        <p style={{ color: "#555", fontSize: 16, marginTop: 12 }}>
+          Tap <strong>Apply</strong> on any listing to go directly to the application page.
+        </p>
+        <JobsClient
+          initialJobs={jobs ?? []}
+          careerPaths={careerPaths ?? []}
+          userId={user?.id ?? null}
+          initialSavedIds={savedJobIds}
+        />
+      </section>
+
       <Footer />
     </div>
   );
